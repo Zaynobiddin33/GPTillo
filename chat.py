@@ -95,7 +95,7 @@ users_list = load_users()
 
 @dp.message(lambda message: not message.text or not message.text.startswith("/"))
 async def handle_group_messages(message: Message):
-    # try:
+    try:
         chat = get_or_create_chat_session(message.chat.id, message.chat.type)
         if message.chat.type == 'private':
             if not any(user["id"] == message.from_user.id for user in users_list):
@@ -190,10 +190,10 @@ async def handle_group_messages(message: Message):
                         file.write(f'{response}'+'\n'+f'*'*50)
                 #ENDTEST
                 await escape_markdown(message, chat, response.text)
-    # except ClientError as e:
-    #     if "429 RESOURCE_EXHAUSTED" in str(e):
-    #         update_token_file()
-    #         restart_program()
+    except ClientError as e:
+        if "429 RESOURCE_EXHAUSTED" in str(e):
+            update_token_file()
+            restart_program()
 
 @dp.my_chat_member()
 async def handle_bot_status_change(event: ChatMemberUpdated):
