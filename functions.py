@@ -51,9 +51,11 @@ def split_message(text, limit=4096):
 def update_token_file():
     g1 = GEMINI_API
     g2 = GEMINI_API2
+    g3 = GEMINI_API3
     with open('tokens.py', 'w', encoding='utf-8') as file:
         file.write(f"GEMINI_API = '{g2}'\n")
-        file.write(f"GEMINI_API2 = '{g1}'\n")
+        file.write(f"GEMINI_API2 = '{g3}'\n")
+        file.write(f"GEMINI_API3 = '{g1}'\n")
         file.write(f"BOT_TOKEN = '{BOT_TOKEN}'\n")
     print('[RESOURCE EXHAUSTED FOR TOKEN] tokens.py updated')
 
