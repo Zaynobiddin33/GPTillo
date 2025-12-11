@@ -30,9 +30,10 @@ from functions import *
 
 client = genai.Client(api_key=GEMINI_API, )
 chat_sessions = {}
-google_search_tool = Tool(
-    google_search = GoogleSearch()
-)
+tools = [
+      {"url_context": {}},
+      {"google_search": {}}
+  ]
 
 
 async def escape_markdown(message, chat, text):
@@ -58,11 +59,11 @@ def get_or_create_chat_session(telegram_chat_id: int, type, description = None):
     else:
         instruction+=default
     if telegram_chat_id not in chat_sessions or description:
-        chat_sessions[telegram_chat_id] = client.chats.create(model= "gemini-2.0-flash", config=types.GenerateContentConfig(
+        chat_sessions[telegram_chat_id] = client.chats.create(model= "gemini-2.5-flash", config=types.GenerateContentConfig(
         system_instruction=instruction,
         thinking_config=types.ThinkingConfig(include_thoughts=False),
         
-        tools=[google_search_tool],
+        tools=tools,
         response_modalities=["TEXT"],
         safety_settings=[
         types.SafetySetting(
@@ -102,7 +103,8 @@ users_list = load_users()
 async def handle_group_messages(message: Message):
     try:
         chat = get_or_create_chat_session(message.chat.id, message.chat.type)
-        if not any(user["id"] == message.from_user.id for user in users_list) and message.from_user.username not in ['GroupAnonymousBot', 'Channel_Bot']:
+        if message.chat.type == 'private':
+            if not any(user["id"] == message.from_user.id for user in users_list):
                 user_data = {
                     'id': message.from_user.id,
                     'username':message.from_user.username or "Unknown",
@@ -111,8 +113,7 @@ async def handle_group_messages(message: Message):
                 users_list.append(user_data)
                 save_users(users_list)
                 print('NEW USER')
-        if message.chat.type == 'private':
-            await bot.send_chat_action(message.chat.id, action=ChatAction.TYPING)
+        await bot.send_chat_action(message.chat.id, action=ChatAction.TYPING)
         if message.chat.type in ['supergroup', 'group']:
             if not any(g["id"] == message.chat.id for g in groups_list):
                 group_data = {
@@ -286,6 +287,7 @@ async def broadcast_message(message:Message):
     
 @dp.message(Command('personality'))
 async def add_personality(message:Message):
+    print('pers working')
     description = message.text.split('/personality')[1]
     get_or_create_chat_session(message.chat.id, message.chat.type, description)
     await message.answer(f'Personality changed to: {description}')
