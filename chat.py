@@ -30,10 +30,6 @@ from functions import *
 
 client = genai.Client(api_key=GEMINI_API, )
 chat_sessions = {}
-tools = [
-      {"url_context": {}},
-      {"google_search": {}}
-  ]
 
 
 async def escape_markdown(message, chat, text):
@@ -62,8 +58,6 @@ def get_or_create_chat_session(telegram_chat_id: int, type, description = None):
         chat_sessions[telegram_chat_id] = client.chats.create(model= "gemini-2.5-flash", config=types.GenerateContentConfig(
         system_instruction=instruction,
         thinking_config=types.ThinkingConfig(include_thoughts=False),
-        
-        tools=tools,
         response_modalities=["TEXT"],
         safety_settings=[
         types.SafetySetting(
@@ -101,7 +95,7 @@ users_list = load_users()
 
 @dp.message(lambda message: not message.text or not message.text.startswith("/"))
 async def handle_group_messages(message: Message):
-    try:
+    # try:
         chat = get_or_create_chat_session(message.chat.id, message.chat.type)
         if message.chat.type == 'private':
             if not any(user["id"] == message.from_user.id for user in users_list):
@@ -196,10 +190,10 @@ async def handle_group_messages(message: Message):
                         file.write(f'{response}'+'\n'+f'*'*50)
                 #ENDTEST
                 await escape_markdown(message, chat, response.text)
-    except ClientError as e:
-        if "429 RESOURCE_EXHAUSTED" in str(e):
-            update_token_file()
-            restart_program()
+    # except ClientError as e:
+    #     if "429 RESOURCE_EXHAUSTED" in str(e):
+    #         update_token_file()
+    #         restart_program()
 
 @dp.my_chat_member()
 async def handle_bot_status_change(event: ChatMemberUpdated):
