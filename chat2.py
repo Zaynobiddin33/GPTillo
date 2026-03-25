@@ -15,9 +15,12 @@ from groq import Groq  # ← NEW
 from tokens import *    # now contains GROQ_API_KEY
 from gen import generate_image
 from functions import *
+import re
 
 
 print('start')
+def remove_think(text: str) -> str:
+    return re.sub(r'<think>.*?</think>', '', text, flags=re.DOTALL)
 
 # ====================== GROQ SETUP ======================
 client = Groq(api_key=GROQ_API_KEY)
@@ -127,13 +130,13 @@ async def handle_group_messages(message: Message):
         chat_history.append({"role": "user", "content": user_content})
 
         completion = client.chat.completions.create(
-            model="meta-llama/llama-4-scout-17b-16e-instruct",   # supports images + very fast
+            model="qwen/qwen3-32b",   # supports images + very fast
             messages=chat_history,
             temperature=0.8,
             max_tokens=1024
         )
 
-        response_text = completion.choices[0].message.content.strip()
+        response_text = remove_think(completion.choices[0].message.content.strip())
         chat_history.append({"role": "assistant", "content": response_text})
 
         print(f"Groq: {response_text}", flush=True)
@@ -193,10 +196,10 @@ async def start_handler(message: Message):
         chat_history.append({"role": "user", "content": f'{full_name}: Hello'})
         
         completion = client.chat.completions.create(
-            model="meta-llama/llama-4-scout-17b-16e-instruct",
+            model="qwen/qwen3-32b",
             messages=chat_history
         )
-        response_text = completion.choices[0].message.content.strip()
+        response_text = remove_think(completion.choices[0].message.content.strip())
         chat_history.append({"role": "assistant", "content": response_text})
         
         await message.answer(response_text)
