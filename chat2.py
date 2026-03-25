@@ -130,7 +130,7 @@ async def handle_group_messages(message: Message):
         chat_history.append({"role": "user", "content": user_content})
 
         completion = client.chat.completions.create(
-            model="qwen/qwen3-32b",   # supports images + very fast
+            model="openai/gpt-oss-120b",   # supports images + very fast
             messages=chat_history,
             temperature=0.8,
             max_tokens=1024
@@ -196,7 +196,7 @@ async def start_handler(message: Message):
         chat_history.append({"role": "user", "content": f'{full_name}: Hello'})
         
         completion = client.chat.completions.create(
-            model="qwen/qwen3-32b",
+            model="openai/gpt-oss-120b",
             messages=chat_history
         )
         response_text = remove_think(completion.choices[0].message.content.strip())
